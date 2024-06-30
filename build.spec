@@ -14,7 +14,10 @@ options = [
 
 a = Analysis(['app.py'],  # replace me with your path
              pathex=['app.py'],
-             binaries=[('ffmpeg-7.0-essentials_build/bin/ffmpeg.exe', 'ffmpeg-7.0-essentials_build/bin')],
+             binaries=[
+                ('ffmpeg-7.0.1-essentials_build/bin/ffmpeg.exe', 'ffmpeg-7.0.1-essentials_build/bin'),
+                ('ffmpeg-7.0.1-essentials_build/bin/ffprobe.exe', 'ffmpeg-7.0.1-essentials_build/bin'),
+            ],
              datas=[('images', 'images')],
              hiddenimports=[],
              hookspath=[],
@@ -34,7 +37,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           options,
-          name='zutano_videoconverter_v1.5',
+          name='zutano_videoconverter_v1.6',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
