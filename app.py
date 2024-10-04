@@ -8,8 +8,8 @@ import subprocess
 from gooey import Gooey, GooeyParser, local_resource_path
 
 IMAGES_PATH = local_resource_path('images')
-FFPROBE_PATH = local_resource_path('ffmpeg-7.0.1-essentials_build/bin/ffprobe.exe')
-FFMPEG_PATH = local_resource_path('ffmpeg-7.0.1-essentials_build/bin/ffmpeg.exe')
+FFPROBE_PATH = local_resource_path('ffmpeg-7.1-essentials_build/bin/ffprobe.exe')
+FFMPEG_PATH = local_resource_path('ffmpeg-7.1-essentials_build/bin/ffmpeg.exe')
 
 
 def parse_time(timestring):
@@ -100,7 +100,7 @@ def convert(input_filename,
         clip_duration = ffprobe_duration(input_filename)
         clip_args = []
 
-    desired_bitrate_kbps = (target_video_size_mb * 8192) / (int(clip_duration) + 1)
+    desired_bitrate_kbps = (target_video_size_mb * 8192) / (clip_duration * 1.05)
     target_video_bitrate_kbps = desired_bitrate_kbps - audio_bitrate_kbps
 
     crop_string = ''
@@ -157,7 +157,7 @@ def convert(input_filename,
 
 
 @Gooey(
-    program_name='Zutano\'s Video Converter Script v1.6',
+    program_name='Zutano\'s Video Converter Script v1.7',
     image_dir=IMAGES_PATH,
     default_size=(800, 900),
     progress_regex=r'^PROGRESS: (?P<current>\d+)/(?P<total>\d+)$',
@@ -223,7 +223,7 @@ def main():
     advanced_settings.add_argument(
         'target_size', metavar='Target File Size (MB)', type=float,
         help='Desired size of the output video file in megabytes',
-        default=25
+        default=10
     )
     advanced_settings.add_argument(
         'encoding_speed', metavar='Encoding Speed', type=str,
