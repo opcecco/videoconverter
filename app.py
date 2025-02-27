@@ -146,7 +146,7 @@ def convert(input_filename,
 
 
 @Gooey(
-    program_name='Zutano\'s Video Converter Script v1.7',
+    program_name='Zutano\'s Video Converter Script v1.7.1',
     image_dir=IMAGES_PATH,
     default_size=(800, 900),
     progress_regex=r'^PROGRESS: (?P<current>\d+)/(?P<total>\d+)$',
