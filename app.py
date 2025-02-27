@@ -107,50 +107,39 @@ def convert(input_filename,
     if aspect_enabled:
         crop_string = f'crop=ih/{aspect_height}*{aspect_width}:ih,'
 
+    process_args = [
+        FFMPEG_PATH,
+        '-y',
+        '-i', input_filename,
+        *clip_args,
+        '-r', f'{framerate}',
+        '-vf', f'{crop_string}scale={scale_width}:{scale_height}',
+        '-c:v', video_lib,
+        '-b:v', f'{target_video_bitrate_kbps}k',
+        '-preset', encoding_speed,
+        '-c:a', audio_lib,
+        '-b:a', f'{audio_bitrate_kbps}k',
+        '-f', output_format,
+    ]
+
     print('working dir:', os.getcwd())
     print('clip duration:', clip_duration)
     print('video bitrate:', target_video_bitrate_kbps)
 
-    ffprocess = subprocess.Popen([
-        FFMPEG_PATH,
-        '-y',
-        '-i', input_filename,
-        *clip_args,
-        '-r', f'{framerate}',
-        '-vf', f'{crop_string}scale={scale_width}:{scale_height}',
-        '-c:v', video_lib,
-        '-b:v', f'{target_video_bitrate_kbps}k',
-        '-preset', encoding_speed,
-        '-c:a', audio_lib,
-        '-b:a', f'{audio_bitrate_kbps}k',
-        '-f', output_format,
-        '-pass', '1',
-        'NUL'
-    ],
-    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-    stdin=subprocess.DEVNULL, shell=True, universal_newlines=True)
+    ffprocess = subprocess.Popen(
+        [*process_args, '-pass', '1', 'NUL'],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL, shell=True, universal_newlines=True
+    )
 
     print(ffprocess.args)
     process_ff_output(ffprocess, clip_duration, part=0)
 
-    ffprocess = subprocess.Popen([
-        FFMPEG_PATH,
-        '-y',
-        '-i', input_filename,
-        *clip_args,
-        '-r', f'{framerate}',
-        '-vf', f'{crop_string}scale={scale_width}:{scale_height}',
-        '-c:v', video_lib,
-        '-b:v', f'{target_video_bitrate_kbps}k',
-        '-preset', encoding_speed,
-        '-c:a', audio_lib,
-        '-b:a', f'{audio_bitrate_kbps}k',
-        '-f', output_format,
-        '-pass', '2',
-        output_filename
-    ],
-    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-    stdin=subprocess.DEVNULL, shell=True, universal_newlines=True)
+    ffprocess = subprocess.Popen(
+        [*process_args, '-pass', '2', output_filename],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL, shell=True, universal_newlines=True
+    )
 
     print(ffprocess.args)
     process_ff_output(ffprocess, clip_duration, part=1)
