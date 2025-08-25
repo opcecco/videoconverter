@@ -7,6 +7,7 @@ import subprocess
 
 from gooey import Gooey, GooeyParser, local_resource_path
 
+ROOT_PATH = local_resource_path('')
 IMAGES_PATH = local_resource_path('images')
 FFPROBE_PATH = local_resource_path('ffmpeg-7.1-essentials_build/bin/ffprobe.exe')
 FFMPEG_PATH = local_resource_path('ffmpeg-7.1-essentials_build/bin/ffmpeg.exe')
@@ -72,8 +73,48 @@ def process_ff_output(ffprocess,
         raise Exception(f'Error in ffmpeg pass {part + 1}')
 
 
+def remux(input_filename,
+          clip_enabled,
+          clip_from,
+          clip_to):
+
+    file_ext = os.path.splitext(input_filename)[1]
+    temp_filename = os.path.join(ROOT_PATH, 'temp_remux' + file_ext)
+
+    clip_args = []
+    if clip_enabled:
+        clip_args = [
+            '-ss', clip_from,
+            '-to', clip_to,
+        ]
+
+    print('remuxing into temp file')
+    ffprocess = subprocess.Popen(
+        [
+            FFMPEG_PATH,
+            '-y',
+            '-i', input_filename,
+            *clip_args,
+            '-c', 'copy',
+            temp_filename,
+        ],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL, shell=True, universal_newlines=True
+    )
+    print(ffprocess.args)
+
+    for line in ffprocess.stdout:
+        print(line.rstrip())
+    ffprocess.wait()
+    if ffprocess.returncode:
+        raise Exception(f'Error in ffmpeg remux')
+
+    return temp_filename
+
+
 def convert(input_filename,
             output_filename,
+            remux_first,
             clip_enabled,
             clip_from,
             clip_to,
@@ -89,6 +130,11 @@ def convert(input_filename,
             output_format,
             video_lib,
             audio_lib):
+
+    if remux_first:
+        temp_filename = remux(input_filename, clip_enabled, clip_from, clip_to)
+        input_filename = temp_filename
+        clip_enabled = False
 
     if clip_enabled:
         clip_duration = (parse_time(clip_to) - parse_time(clip_from)).total_seconds()
@@ -131,7 +177,6 @@ def convert(input_filename,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         stdin=subprocess.DEVNULL, shell=True, universal_newlines=True
     )
-
     print(ffprocess.args)
     process_ff_output(ffprocess, clip_duration, part=0)
 
@@ -140,9 +185,11 @@ def convert(input_filename,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         stdin=subprocess.DEVNULL, shell=True, universal_newlines=True
     )
-
     print(ffprocess.args)
     process_ff_output(ffprocess, clip_duration, part=1)
+
+    if remux_first:
+        os.remove(temp_filename)
 
 
 @Gooey(
@@ -188,6 +235,10 @@ def main():
     basic_settings.add_argument(
         '--clip', metavar='Clip Video', action='store_true',
         help='Enable clipping the video to the desired timepoints'
+    )
+    basic_settings.add_argument(
+        '--remux', metavar='Remux First', action='store_true',
+        help='Remux the video into a temporary file before converting'
     )
 
     advanced_settings = parser.add_argument_group(
@@ -269,6 +320,7 @@ def main():
     convert(
         args.input_filename,
         args.output_filename,
+        args.remux,
         args.clip,
         args.clip_from,
         args.clip_to,
