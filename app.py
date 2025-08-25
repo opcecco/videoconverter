@@ -9,8 +9,8 @@ from gooey import Gooey, GooeyParser, local_resource_path
 
 ROOT_PATH = local_resource_path('')
 IMAGES_PATH = local_resource_path('images')
-FFPROBE_PATH = local_resource_path('ffmpeg-7.1-essentials_build/bin/ffprobe.exe')
-FFMPEG_PATH = local_resource_path('ffmpeg-7.1-essentials_build/bin/ffmpeg.exe')
+FFPROBE_PATH = local_resource_path('ffmpeg-8.0-essentials_build/bin/ffprobe.exe')
+FFMPEG_PATH = local_resource_path('ffmpeg-8.0-essentials_build/bin/ffmpeg.exe')
 
 
 def parse_time(timestring):
@@ -193,7 +193,7 @@ def convert(input_filename,
 
 
 @Gooey(
-    program_name='Zutano\'s Video Converter Script v1.7.1',
+    program_name='Zutano\'s Video Converter Script v1.8',
     image_dir=IMAGES_PATH,
     default_size=(800, 900),
     progress_regex=r'^PROGRESS: (?P<current>\d+)/(?P<total>\d+)$',
